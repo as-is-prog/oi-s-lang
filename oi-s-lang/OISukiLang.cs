@@ -21,6 +21,7 @@ namespace oi_s_lang
 
         static readonly string[] ORDERS;
 
+        private string source;
         private int cursor;//プログラムカウンタ
 
         private int[] memory;
@@ -49,14 +50,16 @@ namespace oi_s_lang
 
         public void Exec(string source)
         {
-            while (source.Length > cursor)
+            this.source = source;
+
+            while (this.source.Length > cursor)
             {
                 bool hit = false;
                 foreach (string order in ORDERS)
                 {
-                    if (source.Length - cursor < order.Length)continue;
+                    if (this.source.Length - cursor < order.Length)continue;
 
-                    if (source.IndexOf(order,cursor,order.Length) == cursor)
+                    if (this.source.IndexOf(order,cursor,order.Length) == cursor)
                     {
                         cursor += order.Length;
                         hit = true;
@@ -91,7 +94,16 @@ namespace oi_s_lang
                     Console.Write((char)memory[pointer]);
                     break;
                 case LOOP_OPEN:
-                    braceStack.Push(cursor);
+                    if (memory[pointer] != 0)
+                    {
+                        braceStack.Push(cursor);
+                    }
+                    else
+                    {
+                        int idx = source.IndexOf(LOOP_CLOSE, cursor);
+                        if (idx == -1) throw new Exception("いずみんイズミンの(かっこの)対応とれてないよ");
+                        cursor = idx + LOOP_CLOSE.Length;
+                    }
                     break;
                 case LOOP_CLOSE:
                     if (memory[pointer] != 0)
