@@ -44,9 +44,9 @@ namespace oi_s_lang
                      }.OrderBy((s) => { return -s.Length; }).ToArray<String>();
         }
         
-        public OISukiLang()
+        public OISukiLang(int memorySize = DEFAULT_MEMORY_SIZE)
         {
-            memory = new int[DEFAULT_MEMORY_SIZE];
+            memory = new int[memorySize];
         }
 
         public void Exec(string source)
