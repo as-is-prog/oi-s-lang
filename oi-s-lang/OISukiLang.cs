@@ -60,6 +60,7 @@ namespace oi_s_lang
         public void Exec(string source)
         {
             this.source = source;
+            cursor = 0;
 
             while (this.source.Length > cursor)
             {
