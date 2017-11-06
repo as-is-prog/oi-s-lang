@@ -44,11 +44,19 @@ namespace oi_s_lang
                      }.OrderBy((s) => { return -s.Length; }).ToArray<String>();
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="memorySize">確保する配列のサイズ</param>
         public OISukiLang(int memorySize = DEFAULT_MEMORY_SIZE)
         {
             memory = new int[memorySize];
         }
 
+        /// <summary>
+        /// 大石泉すき言語を実行します。
+        /// </summary>
+        /// <param name="source">大石泉言語のコード文字列</param>
         public void Exec(string source)
         {
             this.source = source;
