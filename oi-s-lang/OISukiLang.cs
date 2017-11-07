@@ -1,8 +1,9 @@
-/* Copyright (c) 2017 as-is-prog */
+﻿/* Copyright (c) 2017 as-is-prog */
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace oi_s_lang
@@ -23,10 +24,11 @@ namespace oi_s_lang
         static readonly string[] ORDERS;
 
         private string source;
+        private string[] tokens;
         private int cursor;//プログラムカウンタ
 
         private int[] memory;
-        int pointer;
+        private int pointer;
 
         Stack<int> braceStack = new Stack<int>();// [ のスタック
 
@@ -59,26 +61,46 @@ namespace oi_s_lang
         /// <param name="source">大石泉言語のコード文字列</param>
         public void Exec(string source)
         {
-            this.source = source;
+            PreAnalyze(source);
+
             cursor = 0;
 
-            while (this.source.Length > cursor)
+            while(true)
+            {
+                //Console.Write(tokens[cursor]);
+                OrderExec(tokens[cursor]);
+                cursor++;
+                if (cursor >= tokens.Length) break;
+            }
+        }
+        
+        private void PreAnalyze(string source)
+        {
+            var cursor = 0;
+
+            source = new Regex(@"[\s]*\{[^\}]+\}").Replace(source, "");
+
+            var tokenList = new List<string>();
+
+            while (source.Length > cursor)
             {
                 bool hit = false;
                 foreach (string order in ORDERS)
                 {
-                    if (this.source.Length - cursor < order.Length)continue;
+                    if (source.Length - cursor < order.Length) continue;
 
-                    if (this.source.IndexOf(order,cursor,order.Length) == cursor)
+                    if (source.IndexOf(order, cursor, order.Length) == cursor)
                     {
                         cursor += order.Length;
                         hit = true;
-                        OrderExec(order);
+                        tokenList.Add(order);
                         break;
                     }
                 }
                 if (!hit) cursor++;
             }
+
+            tokens = tokenList.ToArray();
         }
 
         private void OrderExec(string order)
@@ -93,9 +115,17 @@ namespace oi_s_lang
                     break;
                 case VALUE_INCREMENT:
                     memory[pointer]++;
+                    if (memory[pointer] == 256)
+                    {
+//                        memory[pointer] = 0;
+                    }
                     break;
                 case VALUE_DECREMENT:
                     memory[pointer]--;
+                    if (memory[pointer] == -1)
+                    {
+//                        memory[pointer] = 255;
+                    }
                     break;
                 case VALUE_GET:
                     memory[pointer] = Console.Read();
@@ -104,15 +134,30 @@ namespace oi_s_lang
                     Console.Write((char)memory[pointer]);
                     break;
                 case LOOP_OPEN:
-                    if (memory[pointer] != 0)
+                    if (memory[pointer] == 0)
                     {
-                        braceStack.Push(cursor);
+                        int idx = cursor;
+                        int depth = 0;
+
+                        while (idx < tokens.Length)
+                        {
+                            if (tokens[idx] == LOOP_OPEN)
+                            {
+                                depth++;
+                            }
+                            else if (tokens[idx] == LOOP_CLOSE)
+                            {
+                                depth--;
+                                if (depth == 0) break;
+                            }
+                            idx++;
+                        }
+                        if (idx >= tokens.Length) throw new Exception("いずみんイズミンの(かっこの)対応とれてないよ");
+                        cursor = idx;
                     }
                     else
                     {
-                        int idx = source.IndexOf(LOOP_CLOSE, cursor);
-                        if (idx == -1) throw new Exception("いずみんイズミンの(かっこの)対応とれてないよ");
-                        cursor = idx + LOOP_CLOSE.Length;
+                        braceStack.Push(cursor);
                     }
                     break;
                 case LOOP_CLOSE:
