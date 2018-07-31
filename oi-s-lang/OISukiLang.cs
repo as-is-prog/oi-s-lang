@@ -23,7 +23,6 @@ namespace oi_s_lang
 
         static readonly string[] ORDERS;
 
-        private string source;
         private string[] tokens;
         private int cursor;//プログラムカウンタ
 
